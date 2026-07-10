@@ -1,0 +1,14 @@
+手机品牌:samsung
+手机型号:SM-J701F
+安卓版本:10
+语言环境:en
+AppVersionName:1.2.3
+AppVersionCode:76
+
+2026-06-15 10:13:19.776  [DbDataUtils.codeTimingData(L:384)]：刷新今天的心率数据==》
+2026-06-15 10:14:50.985  [DbDataUtils.codeTimingData(L:384)]：刷新今天的心率数据==》
+2026-06-15 10:16:33.443  [DbDataUtils.codeTimingData(L:384)]：刷新今天的心率数据==》
+2026-06-15 10:17:01.192  [DbDataUtils.codeTimingData(L:384)]：刷新今天的心率数据==》
+2026-06-15 10:17:28.692  [DbDataUtils.codeTimingData(L:384)]：刷新今天的心率数据==》
+2026-06-15 10:18:24.250  [ReceiverCfgHelper.onReceive(L:88)]：action==>custom_com.simpleCamera.exitCamera_for_dev
+2026-06-15 10:18:24.251  [ReceiverCfgHelper.onReceive(L:99)]：退出设备相机模式
