@@ -1,42 +1,39 @@
 import os
 import sqlite3
 
-db_path = "map_cache.db"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Docs", "map_cache.db"))
 
-if not os.path.exists(db_path):
-    print(f"[!] Error: Missing '{db_path}' in your current laptop directory.")
-    print("Please copy it over from the phone's diskcache folder first!")
-    exit(1)
+print(f"[*] Extracting resource data maps from: {db_path}\n")
 
-print(f"[*] Opening and scanning watch local cache map: {db_path}")
 try:
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     
-    # Extract the names of all internal data storage tables
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    tables = cursor.fetchall()
+    # 1. Inspect column names inside the 'resources' table
+    cursor.execute("PRAGMA table_info(resources);")
+    columns = cursor.fetchall()
+    col_names = [col[1] for col in columns]
+    print(f"[+] 'resources' Table Structure Columns: {col_names}\n")
     
-    print(f"[+] Found {len(tables)} active data storage maps inside the cache database:")
-    for t in tables:
-        print(f"  -> Table Name: {t[0]}")
-        
-    for t in tables:
-        table_name = t[0]
-        print(f"\n=== SHOWING DATA INSIDE TABLE: {table_name} ===")
-        try:
-            cursor.execute(f"SELECT * FROM {table_name} LIMIT 10;")
-            rows = cursor.fetchall()
-            for r in rows:
-                # Convert rows to string and look for asset hooks
-                row_str = str(r)
-                if "http" in row_str or ".bin" in row_str or "D900" in row_str:
-                    print(f"  [ASSET HOOK] -> {row_str}")
+    # 2. Extract the actual stored rows
+    cursor.execute("SELECT * FROM resources LIMIT 20;")
+    rows = cursor.fetchall()
+    
+    if not rows:
+        print("[-] The 'resources' table is currently empty.")
+    else:
+        print(f"=== DUMPING FIRST {len(rows)} ROWS FROM RESOURCES ===")
+        for index, row in enumerate(rows):
+            print(f"\n[Row #{index + 1}]")
+            for col_name, value in zip(col_names, row):
+                # Make the output clean and highlight URLs or asset file pathways
+                val_str = str(value)
+                if "http" in val_str or ".bin" in val_str or ".png" in val_str:
+                    print(f"  * {col_name} -> [ASSET HOOK] {val_str}")
                 else:
-                    print(f"  -> {row_str[:120]}") # Truncate long rows to keep it clean
-        except Exception as table_err:
-            print(f"  [!] Could not query table rows: {table_err}")
-            
+                    print(f"  * {col_name} -> {val_str[:120]}")
+                    
     conn.close()
 except Exception as e:
-    print(f"[!] Database access error: {e}")
+    print(f"[!] Database extraction failure: {e}")
