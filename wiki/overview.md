@@ -1,12 +1,12 @@
 # Project Overview & Core Dashboard
 
 ## 1. Project Dashboard
-- **Current Development Phase:** Protocol Analysis & Local Log Extraction Sweep.
-- **Highest Priority Task:** Local binary regex pattern scanning across unencrypted mobile developer logs (`cyNetLog.txt` and `cyBleLog.txt`) via `Code/scan_archive_directly.py` to isolate raw asset transmission links.
+- **Current Development Phase:** Application Architecture & Runtime Analysis
+- **Highest Priority Task:** Analyze the runtime message dispatcher (`main_msg_proc`) to map subsystem interactions and event routing.
 - **Biggest Technical Blocker:** SQLite database tables inside `map_cache.db` utilize cryptographically wrapped storage fields at rest, preventing direct offline extraction of server JSON payloads.
 - **Most Uncertain Area:** The internal peripheral initialization parameters and clock tree parameters allocated inside `extcfg.bin`.
-- **Most Likely Upcoming Breakthrough:** Isolating unencrypted watch face asset download URLs directly out of the application's network log stream.
-- **Immediate Next Experiment:** Deep chunk isolation and asset link validation tracking using automated pattern matchers inside `/Code/`.
+- **Most Likely Upcoming Breakthrough:** Identification of the firmware entry point and startup code, enabling structured firmware reverse engineering.
+- **Immediate Next Experiment:** Reverse engineer `main_msg_proc` to identify the application's central event-dispatch architecture.
 
 ## 2. Global Project Milestones Matrix
 
@@ -14,7 +14,7 @@
 | :--- | :--- | :--- | :--- |
 | **Deconstruct BLE Protocol** | Map out commands, notifications, and device syncing handshakes over Bluetooth characteristics. | **In Progress** | `[E003]` |
 | **Map OTA Archive Format** | Unpack nested file segments out of the vendor's update file layout structures. | **Verified** | `[E004]` |
-| **Extract Embedded Partition** | Parse the flat SDFS system layout arrays to access localized configuration blocks. | **Verified** | `[E004]` |
+| **Extract Firmware Partitions** | Parse the flat SDFS system layout arrays to access localized configuration blocks. | **Verified** | `[E006][E007][E008][E009]` |
 | **Modify Watch Assets** | Rebuild an SDFS binary asset cluster with custom image assets and deploy to hardware. | **Unverified** | None |
 | **Tweak Display Timing Parameters** | Locate display timing registers inside the configuration tables to adjust refresh rates. | **In Progress** | `[E001]` |
 

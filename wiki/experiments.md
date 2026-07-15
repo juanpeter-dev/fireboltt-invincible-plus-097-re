@@ -14,3 +14,17 @@ This repository module preserves chronological entries of all direct technical e
 * **Observed Result:** Script executed successfully and dumped 18 rows, but all string paths and metadata fields returned cryptographically scrambled byte matrices bound to initialization variables (`metadata_nonce`, `data_nonce`).
 * **Interpretation & Lessons Learned:** The companion application implements an AEAD encryption-at-rest scheme (likely AES-GCM or SQLCipher) before serializing network states to the disk layer. Interrogating the local database file directly on a host laptop without live memory access keys is an inefficient vector.
 * **Future Follow-up Action:** Shift focus to static APK decompilation to trace key derivations, and run packet captures to intercept assets in transit before encryption takes place.
+
+---
+
+## Experiment E0002: Executable Firmware Verification
+
+* **Parent Question Target:** `Q002` (Identify the primary executable firmware image and startup sequence)
+* **Goal:** Determine whether `Block2_System_app.bin` contains the primary executable firmware and reconstruct its startup path.
+* **Tools Used:** Ghidra 12.1.2, `zephyr.map`
+* **Files Used:** `/Docs/extracted_clean/Block2_System_app.bin`, `/Docs/zephyr.map`
+* **Procedure:** Imported the firmware image into Ghidra, configured the ARM Cortex-M image, and cross-referenced interrupt vector entries and function addresses with the linker map. Sequentially analyzed the startup chain (`z_arm_reset`, `z_arm_prep_c`, `z_cstart`, `bg_thread_main`, `main()`).
+* **Expected Result:** Confirm that the extracted image is executable firmware and identify the transition from hardware startup into the Fire-Boltt application.
+* **Observed Result:** The firmware image contains a valid Cortex-M interrupt vector table and follows a verified ARM → Zephyr RTOS startup sequence before transferring execution to `main()` within `app/libapp.a`.
+* **Interpretation & Lessons Learned:** `Block2_System_app.bin` is confirmed as the primary executable firmware image. The project now has a verified execution path from reset through Zephyr initialization into the vendor application.
+* **Future Follow-up Action:** Reverse engineer `main_msg_proc()` to map the application's runtime event architecture and subsystem interactions.

@@ -48,3 +48,48 @@ This document acts as our single source of truth for the chronological timeline 
 - Migrated the root-level `AI_Onboarding.md` framework file to `ONBOARDING.md` to shift the workspace to a human-first, contributor-ready onboarding baseline.
 - Removed self-evaluating phrases ("completely optimized") across the repository metadata to ensure a strictly objective, empirical technical standard.
 - Created `docs/experiments.md` to serve as the project's permanent record for structural code and hardware experimental outcomes, decoupling execution details from the primary roadmap history.
+
+### 2026-07-14 (Update 8)
+
+- Added an external firmware reference source from https://github.com/herocoder14/fireboltt097 for comparative analysis and recovery of firmware artifacts.
+- Verified the OTA package contains multiple extracted firmware partitions, including staging and system images.
+- Identified two separate SDFS filesystem images and catalogued their observable contents.
+- Observed that `Block2_System_app.bin` begins with values consistent with an ARM Cortex-M interrupt vector table. This has not yet been validated through Ghidra.
+- Correlated OTA package structure with the linker map (`zephyr.map`) to prepare for firmware disassembly.
+- Next experiment: verify the executable image and firmware entry point inside Ghidra.
+
+### 2026-07-15 (Update 9)
+
+- Imported Block2_System_app.bin into Ghidra.
+
+- Verified executable firmware image through Cortex-M interrupt vector table.
+
+- Confirmed complete startup chain:
+
+Reset Vector
+↓
+
+z_arm_reset
+↓
+
+z_arm_prep_c
+↓
+
+z_cstart
+↓
+
+bg_thread_main
+↓
+
+main()
+
+- Identified transition from architecture-specific startup to generic Zephyr kernel initialization.
+
+- Identified application entry point inside app/libapp.a(system_app_main.c.obj).
+
+- Confirmed runtime enters a permanent message loop through main_msg_proc().
+
+- Next investigation:
+Reverse engineer runtime message dispatch architecture.
+
+- An independent verification was requested from GLM to validate the hypothesis that the 0x140-byte memcpy in z_arm_prep_c corresponded exactly to the interrupt vector table. GLM concluded that the available evidence was insufficient to verify the claim because the supplied linker map excerpt lacked the required section layout and symbol information. The arithmetic relationship (0x140 bytes = 80 vectors = 16 system exceptions + 64 IRQs) was noted as plausible but not accepted as proof. The project therefore retained the claim at the evidence-supported level rather than promoting it based on inference alone.

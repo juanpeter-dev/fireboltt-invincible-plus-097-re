@@ -36,7 +36,9 @@ To save local terminal context and LLM token constraints, do **not** ingest the 
 ├───► BLE Capture / Radio / Packets Queries? ────► Read [wiki/ble.md]
 ├───► Containers / Manifests / CRC Queries? ─────► Read [wiki/ota.md]
 ├───► RTOS / Symbols / Registers Queries? ───────► Read [wiki/firmware.md]
+├───► Firmware startup / runtime architecture? ─► Read [wiki/boot_sequence.md]
 └───► Target Research / Priority Backlogs? ──────► Read [wiki/questions.md]
+
 
 
 ---

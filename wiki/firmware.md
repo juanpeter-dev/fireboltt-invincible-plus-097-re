@@ -15,6 +15,23 @@
 - **Interpretation:** The device uses the Actions Semiconductor proprietary flat-file layout configuration known as the Smart Digital File System (SDFS).
 - **Why this matters:** Knowing the exact layout allows us to build automated script parsers that open, modify, and cleanly repack system binaries without introducing structural byte shifts.
 
+## 2.1 OTA Package Structure
+
+- **Status:** HIGH CONFIDENCE
+- **Evidence Reference:** `[E006]`, `[E007]`, `[E008]`, `[E009]`
+- **Observed Data:**
+OTA
+├── Block1
+│   ├── TEMP.bin
+│   └── sdfs_k.bin
+│
+└── Block2
+    ├── app.bin
+    └── sdfs.bin
+
+- **Interpretation:** The OTA package contains multiple firmware blocks rather than a single monolithic image. Each block contains either executable firmware or an accompanying SDFS resource partition.
+- **What remains unknown:** The execution order and update sequence of these partitions have not yet been confirmed through firmware analysis.
+
 ## 3. Peripheral Parameter Arrays (`extcfg.bin`)
 - **Status:** HYPOTHESIS
 - **Evidence Reference:** Extracted binary block segment from the master SDFS update container file payload `[E004]`.
@@ -25,3 +42,53 @@
   - Initial configuration codes for the display controller panel.
 - **Negative Evidence:** Altering data records within this file and deploying it to target devices has not yet been executed to observe physical changes on the hardware display.
 - **What would disprove it:** Re-flashing an altered version of `extcfg.bin` onto the device and observing zero changes in display behavior, interface clocks, screen timing, panel power limits, or visual errors.
+
+## 4. ## 4. Primary Executable Firmware Image
+
+- **Status:** CONFIRMED
+- **Evidence Reference:** `[E008]`
+- **Observed Data:** The beginning of `Block2_System_app.bin` contains values consistent with an ARM Cortex-M vector table. The first 32-bit word resembles an initial stack pointer while the second points to a Thumb-mode code address within the firmware address space.
+- **Interpretation:** `Block2_System_app.bin` is the strongest current candidate for the primary executable firmware image.
+- **What would confirm it:** Successful import into Ghidra with a valid Cortex-M vector table and executable startup code.
+- ## Confirmation 
+-- **Evidence Reference:** `[E008]`, `[E001]`
+- **Observed Data:** `Block2_System_app.bin` imports successfully into Ghidra as an ARM Cortex-M firmware image. The interrupt vector table matches the linker map (`zephyr.map`), including the initial stack pointer, `z_arm_reset`, `z_arm_prep_c`, `z_cstart`, `bg_thread_main`, and `main()`.
+- **Interpretation:** `Block2_System_app.bin` is confirmed to be the primary executable firmware image contained within the OTA package.
+
+## 5. Firmware Boot Sequence
+
+- **Status:** CONFIRMED
+- **Evidence Reference:** `[E001]`, `[E008]`
+
+### Verified execution path
+
+Reset Vector
+↓
+z_arm_reset
+↓
+z_arm_prep_c
+↓
+z_cstart
+↓
+arch_switch_to_main_thread
+↓
+bg_thread_main
+↓
+main()
+
+### Architectural boundaries
+
+- **Architecture-specific startup**
+  - `z_arm_reset`
+  - `z_arm_prep_c`
+
+- **Generic Zephyr initialization**
+  - `z_cstart`
+  - `bg_thread_main`
+
+- **Application layer**
+  - `main()`
+
+### Current understanding
+
+The firmware follows a standard ARM Cortex-M → Zephyr RTOS startup sequence before handing execution to the vendor application (`app/libapp.a`). Runtime behaviour after boot is driven by the application message dispatcher (`main_msg_proc`), which is the next investigation target.

@@ -5,9 +5,12 @@ This document tracks active technical backlogs, experimental verification gates,
 ---
 
 ## 🟥 Current Sprint Priorities (Immediate Actions)
-- [ ] Execute `Code/scan_archive_directly.py` to search plain-text strings inside `cyNetLog.txt` and `cyBleLog.txt`.
-- [ ] Isolate valid HTTP request headers, cookie sequences, or authorization tokens from application log streams.
-- [ ] Audit the mobile application framework structure using a local Android testing sandbox to track target resource paths.
+- [ ] Reverse engineer main_msg_proc()
+- [ ] Identify runtime message dispatch architecture.
+- [ ] Map subsystem ownership.
+- [ ] Locate vendor-specific initialization.
+- [ ] Begin tracing Bluetooth initialization from bt_manager_init().
+
 
 ---
 
@@ -37,11 +40,15 @@ This document tracks active technical backlogs, experimental verification gates,
 * [ ] Develop an automated testing utility to test custom multi-image container configurations.
 
 ### Phase 5: Firmware Core Reversing
-* [ ] Initialize a modular Ghidra environment targeting the extracted application code segment (`app.bin`).
-* [ ] Cross-reference memory addresses and function locations using the compiled linker map `zephyr.map`.
-* [ ] Locate peripheral control loops within `extcfg.bin` to search for display bus clock setups.
 
----
+* [x] Initialize Ghidra environment.
+* [x] Verify ARM Cortex-M interrupt vector table.
+* [x] Confirm executable firmware image (`Block2_System_app.bin`).
+* [x] Reconstruct the firmware boot sequence from reset vector to `main()`.
+* [ ] Reverse engineer `main_msg_proc()` and document the runtime message architecture.
+* [ ] Identify subsystem initialization ordering during application startup.
+* [ ] Map ownership of runtime components (Zephyr, Actions Semiconductor, Fire-Boltt application, third-party libraries).
+* [ ] Locate peripheral control loops within `extcfg.bin`.
 
 ## 🛑 Blocked & Parked Tasks
 
