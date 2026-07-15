@@ -43,17 +43,18 @@ OTA
 - **Negative Evidence:** Altering data records within this file and deploying it to target devices has not yet been executed to observe physical changes on the hardware display.
 - **What would disprove it:** Re-flashing an altered version of `extcfg.bin` onto the device and observing zero changes in display behavior, interface clocks, screen timing, panel power limits, or visual errors.
 
-## 4. ## 4. Primary Executable Firmware Image
+## 4. Primary Executable Firmware Image
 
 - **Status:** CONFIRMED
-- **Evidence Reference:** `[E008]`
-- **Observed Data:** The beginning of `Block2_System_app.bin` contains values consistent with an ARM Cortex-M vector table. The first 32-bit word resembles an initial stack pointer while the second points to a Thumb-mode code address within the firmware address space.
-- **Interpretation:** `Block2_System_app.bin` is the strongest current candidate for the primary executable firmware image.
-- **What would confirm it:** Successful import into Ghidra with a valid Cortex-M vector table and executable startup code.
-- ## Confirmation 
--- **Evidence Reference:** `[E008]`, `[E001]`
-- **Observed Data:** `Block2_System_app.bin` imports successfully into Ghidra as an ARM Cortex-M firmware image. The interrupt vector table matches the linker map (`zephyr.map`), including the initial stack pointer, `z_arm_reset`, `z_arm_prep_c`, `z_cstart`, `bg_thread_main`, and `main()`.
+- **Evidence Reference:** `[E001]`, `[E008]`
+- **Observed Data:**
+  - `Block2_System_app.bin` imports successfully into Ghidra as an ARM Cortex-M firmware image.
+  - The interrupt vector table matches the linker map (`zephyr.map`), including the initial stack pointer and the startup entry point (`z_arm_reset`).
+  - Cross-referencing with `zephyr.map` confirms the subsequent startup chain (`z_arm_prep_c`, `z_cstart`, `bg_thread_main`, and `main()`).
 - **Interpretation:** `Block2_System_app.bin` is confirmed to be the primary executable firmware image contained within the OTA package.
+- **What remains unknown:** The relationship between this application image and the remaining firmware partitions (`TEMP.bin`, `sdfs_k.bin`, `sdfs.bin`) has not yet been fully reconstructed.
+
+---
 
 ## 5. Firmware Boot Sequence
 
@@ -62,33 +63,44 @@ OTA
 
 ### Verified execution path
 
+```text
 Reset Vector
-↓
+    ↓
 z_arm_reset
-↓
+    ↓
 z_arm_prep_c
-↓
+    ↓
 z_cstart
-↓
+    ↓
 arch_switch_to_main_thread
-↓
+    ↓
 bg_thread_main
-↓
+    ↓
 main()
+    ↓
+main_msg_proc()
+```
 
 ### Architectural boundaries
 
-- **Architecture-specific startup**
-  - `z_arm_reset`
-  - `z_arm_prep_c`
+**Architecture-specific startup**
+- `z_arm_reset`
+- `z_arm_prep_c`
 
-- **Generic Zephyr initialization**
-  - `z_cstart`
-  - `bg_thread_main`
+**Generic Zephyr initialization**
+- `z_cstart`
+- `bg_thread_main`
 
-- **Application layer**
-  - `main()`
+**Application startup**
+- `main()`
+
+**Runtime execution**
+- `main_msg_proc()`
 
 ### Current understanding
 
-The firmware follows a standard ARM Cortex-M → Zephyr RTOS startup sequence before handing execution to the vendor application (`app/libapp.a`). Runtime behaviour after boot is driven by the application message dispatcher (`main_msg_proc`), which is the next investigation target.
+The firmware follows a standard ARM Cortex-M startup sequence before entering the generic Zephyr initialization path. Control is then transferred into the vendor application (`app/libapp.a`), where runtime operation becomes event-driven through `main_msg_proc()`.
+
+### Remaining uncertainty
+
+The underlying implementation of the runtime message framework has not yet been identified. It remains unknown whether `msg_manager_receive_msg()` directly implements the queue or wraps a lower-level messaging primitive.

@@ -93,3 +93,16 @@ main()
 Reverse engineer runtime message dispatch architecture.
 
 - An independent verification was requested from GLM to validate the hypothesis that the 0x140-byte memcpy in z_arm_prep_c corresponded exactly to the interrupt vector table. GLM concluded that the available evidence was insufficient to verify the claim because the supplied linker map excerpt lacked the required section layout and symbol information. The arithmetic relationship (0x140 bytes = 80 vectors = 16 system exceptions + 64 IRQs) was noted as plausible but not accepted as proof. The project therefore retained the claim at the evidence-supported level rather than promoting it based on inference alone.
+
+### 2026-07-16 (Update 9)
+
+- Verified `Block2_System_app.bin` as the primary executable firmware image through Ghidra analysis and `zephyr.map` correlation.
+- Reconstructed the complete firmware boot sequence:
+  - `z_arm_reset`
+  - `z_arm_prep_c`
+  - `z_cstart`
+  - `bg_thread_main`
+  - `main`
+- Identified `main_msg_proc` as the application's permanent runtime message dispatcher.
+- Independently verified the runtime dispatcher architecture using GLM. Both analyses concluded that the function consumes messages from a queue, dispatches them via a switch-based message ID, and optionally invokes per-message callbacks.
+- Established the next research phase: reconstruct the runtime message framework by tracing message production and queue implementation.

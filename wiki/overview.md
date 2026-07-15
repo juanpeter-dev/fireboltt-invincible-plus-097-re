@@ -1,12 +1,12 @@
 # Project Overview & Core Dashboard
 
 ## 1. Project Dashboard
-- **Current Development Phase:** Application Architecture & Runtime Analysis
-- **Highest Priority Task:** Analyze the runtime message dispatcher (`main_msg_proc`) to map subsystem interactions and event routing.
+- **Current Development Phase:** Runtime Architecture Reconstruction
+- **Highest Priority Task:** Reverse engineer the runtime message framework by tracing how messages are produced, queued, and dispatched through `main_msg_proc`.
 - **Biggest Technical Blocker:** SQLite database tables inside `map_cache.db` utilize cryptographically wrapped storage fields at rest, preventing direct offline extraction of server JSON payloads.
 - **Most Uncertain Area:** The internal peripheral initialization parameters and clock tree parameters allocated inside `extcfg.bin`.
-- **Most Likely Upcoming Breakthrough:** Identification of the firmware entry point and startup code, enabling structured firmware reverse engineering.
-- **Immediate Next Experiment:** Reverse engineer `main_msg_proc` to identify the application's central event-dispatch architecture.
+- **Most Likely Upcoming Breakthrough:** Identifying the underlying message queue implementation and mapping how subsystem events enter the runtime dispatcher.
+- **Immediate Next Experiment:** Analyze `msg_manager_receive_msg()` and trace the underlying queue implementation if it is a wrapper.
 
 ## 2. Global Project Milestones Matrix
 

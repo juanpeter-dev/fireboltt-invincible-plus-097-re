@@ -48,3 +48,23 @@ Fire-Boltt application:
 
 Next research target:
 - main_msg_proc()
+
+Reset
+↓
+
+z_arm_reset
+↓
+
+z_arm_prep_c
+↓
+
+z_cstart
+↓
+
+bg_thread_main
+↓
+
+main
+↓
+
+main_msg_proc

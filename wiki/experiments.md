@@ -19,12 +19,46 @@ This repository module preserves chronological entries of all direct technical e
 
 ## Experiment E0002: Executable Firmware Verification
 
-* **Parent Question Target:** `Q002` (Identify the primary executable firmware image and startup sequence)
-* **Goal:** Determine whether `Block2_System_app.bin` contains the primary executable firmware and reconstruct its startup path.
+* **Parent Question Target:** `Q002` (Identify the primary executable firmware image)
+* **Goal:** Determine whether `Block2_System_app.bin` contains the primary executable firmware.
 * **Tools Used:** Ghidra 12.1.2, `zephyr.map`
 * **Files Used:** `/Docs/extracted_clean/Block2_System_app.bin`, `/Docs/zephyr.map`
-* **Procedure:** Imported the firmware image into Ghidra, configured the ARM Cortex-M image, and cross-referenced interrupt vector entries and function addresses with the linker map. Sequentially analyzed the startup chain (`z_arm_reset`, `z_arm_prep_c`, `z_cstart`, `bg_thread_main`, `main()`).
-* **Expected Result:** Confirm that the extracted image is executable firmware and identify the transition from hardware startup into the Fire-Boltt application.
-* **Observed Result:** The firmware image contains a valid Cortex-M interrupt vector table and follows a verified ARM → Zephyr RTOS startup sequence before transferring execution to `main()` within `app/libapp.a`.
-* **Interpretation & Lessons Learned:** `Block2_System_app.bin` is confirmed as the primary executable firmware image. The project now has a verified execution path from reset through Zephyr initialization into the vendor application.
-* **Future Follow-up Action:** Reverse engineer `main_msg_proc()` to map the application's runtime event architecture and subsystem interactions.
+* **Procedure:** Imported the firmware image into Ghidra, configured the ARM Cortex-M image, and cross-referenced the interrupt vector table with `zephyr.map`.
+* **Expected Result:** Confirm that the extracted image contains executable firmware.
+* **Observed Result:** The firmware contains a valid Cortex-M interrupt vector table. The initial stack pointer, reset vector, and startup symbols match the linker map.
+* **Interpretation & Lessons Learned:** `Block2_System_app.bin` is confirmed as the primary executable firmware image contained within the OTA package.
+* **Future Follow-up Action:** Reconstruct the firmware boot sequence.
+
+---
+
+## Experiment E0003: Firmware Boot Sequence Reconstruction
+
+* **Parent Question Target:** `Q003` (Reconstruct the firmware execution path)
+* **Goal:** Reconstruct the complete execution path from reset through application startup.
+* **Tools Used:** Ghidra 12.1.2, `zephyr.map`, Claude, GLM
+* **Files Used:** `/Docs/extracted_clean/Block2_System_app.bin`, `/Docs/zephyr.map`
+* **Procedure:** Sequentially analyzed the firmware startup functions (`z_arm_reset`, `z_arm_prep_c`, `z_cstart`, `bg_thread_main`, `main()`) using Ghidra. Cross-referenced every function with `zephyr.map`. Independently verified key architectural conclusions using GLM to distinguish direct observations from architectural inference.
+* **Expected Result:** Identify the complete firmware startup chain and determine where execution enters the application layer.
+* **Observed Result:** Reconstructed the verified execution path:
+
+```text
+Reset Vector
+    ↓
+z_arm_reset
+    ↓
+z_arm_prep_c
+    ↓
+z_cstart
+    ↓
+arch_switch_to_main_thread
+    ↓
+bg_thread_main
+    ↓
+main()
+    ↓
+main_msg_proc()
+```
+
+* **Interpretation & Lessons Learned:** The firmware follows a standard ARM Cortex-M → Zephyr RTOS startup sequence before entering the Fire-Boltt application layer. Runtime execution is driven by `main_msg_proc()`, which functions as the application's primary message dispatcher.
+* **Independent Verification:** GLM independently analyzed the runtime dispatcher from stripped firmware and reached the same high-level architectural conclusion: runtime operation is message-driven rather than based on direct subsystem loops. GLM also independently confirmed that the underlying queue implementation cannot yet be determined from the currently analyzed functions.
+* **Future Follow-up Action:** Reverse engineer the runtime message framework by tracing `msg_manager_receive_msg()` and identifying the underlying queue implementation.
