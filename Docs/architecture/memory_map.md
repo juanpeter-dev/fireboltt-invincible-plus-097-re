@@ -1,0 +1,12 @@
+Boot chain
+FunctionAddressVector table (SP + Reset vector)0x10000000z_arm_reset0x1008481cz_arm_prep_c0x100840c8z_cstart0x10112eccbg_thread_main0x10112e64main0x100315ac
+Application runtime dispatcher
+FunctionAddressmain_msg_proc0x10031230
+Receive path (message framework)
+FunctionAddressmsg_manager_receive_msg0x1012cc58os_receive_msg0x100800fck_mbox_get (identified, not disassembled)0x10113724global_mailbox (data object, not a function)0x1800c734
+Send path (message framework)
+FunctionAddressmsg_manager_send_async_msg0x100c590cos_send_async_msg0x1008001ck_mbox_async_put (identified, not disassembled)0x101136c4
+Listener/addressing subsystem
+FunctionAddressmsg_manager_listener_tid0x1012cc4cFUN_100c576c (listener search, unnamed by Ghidra)0x100c576cmsg_manager_add_listener0x100c5850
+Not yet analyzed, but identified as leads
+FunctionAddressWhy flaggedos_msg_init0x1008020cRecommended next — likely initializes global_mailbox/message poolUndefinedFunction_1008b1f8 (BLE ECC/HCI handler)0x1008b1f8Flagged as a mismatch in one turn — real BLE crypto lead, not yet pursuedsys_pm_reboot0x100765ccCalled on message-pool exhaustion in os_send_async_msg
